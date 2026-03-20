@@ -13,3 +13,8 @@ AI\ TableUITests/
 Icon?
 Thumbs.db
 ._*
+
+xcuserdata/
+*.xcuserdatad/
+*.xccheckout
+*.xcscmblueprint

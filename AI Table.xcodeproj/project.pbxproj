@@ -13,6 +13,7 @@
 		A7F855292F6D9B9800ED7F29 /* SplashHTMLGen in Frameworks */ = {isa = PBXBuildFile; productRef = A7F855282F6D9B9800ED7F29 /* SplashHTMLGen */; };
 		A7F8552B2F6D9B9800ED7F29 /* SplashMarkdown in Frameworks */ = {isa = PBXBuildFile; productRef = A7F8552A2F6D9B9800ED7F29 /* SplashMarkdown */; };
 		A7F8552D2F6D9B9800ED7F29 /* SplashTokenizer in Frameworks */ = {isa = PBXBuildFile; productRef = A7F8552C2F6D9B9800ED7F29 /* SplashTokenizer */; };
+		A7F855602F6DAE4000ED7F29 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A7F8554D2F6DAE4000ED7F29 /* README.md */; };
 		A7F8556B2F6DAEF000ED7F29 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = A7F8556A2F6DAEEB00ED7F29 /* .gitignore */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		A7C4DC722F6BDF200024CD45 /* AI Table.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AI Table.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7C4DC812F6BDF220024CD45 /* AI TableTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AI TableTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7C4DC8B2F6BDF220024CD45 /* AI TableUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AI TableUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A7F8554D2F6DAE4000ED7F29 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		A7F8556A2F6DAEEB00ED7F29 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -92,6 +94,7 @@
 		A7C4DC692F6BDF200024CD45 = {
 			isa = PBXGroup;
 			children = (
+				A7F8554D2F6DAE4000ED7F29 /* README.md */,
 				A7F8556A2F6DAEEB00ED7F29 /* .gitignore */,
 				A7C4DC742F6BDF200024CD45 /* AI Table */,
 				A7C4DC842F6BDF220024CD45 /* AI TableTests */,
@@ -243,6 +246,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7F8556B2F6DAEF000ED7F29 /* .gitignore in Resources */,
+				A7F855602F6DAE4000ED7F29 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
