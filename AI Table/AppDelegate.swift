@@ -34,10 +34,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func setupDockWindow() {
-        let dockWidth: CGFloat = 80
-        let dockHeight: CGFloat = 250
-
+func setupDockWindow() {
+        // 🚨 1. 원래 80이었던 넓이를 250으로 쫙 늘렸다 씨발! 🚨
+        let dockWidth: CGFloat = 250 
+        let dockHeight: CGFloat = 450
+        
         dockWindow = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: dockWidth, height: dockHeight),
             styleMask: [.borderless], backing: .buffered, defer: false
@@ -45,13 +46,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         dockWindow.isOpaque = false
         dockWindow.backgroundColor = .clear
         dockWindow.level = .floating
-
+        
         if let screen = NSScreen.main {
+            // 늘어난 넓이만큼 화면 오른쪽 여백도 맞춰줌
             let xPos = screen.visibleFrame.maxX - dockWidth - 20
             let yPos = screen.visibleFrame.minY + 20
             dockWindow.setFrameOrigin(NSPoint(x: xPos, y: yPos))
         }
-
+        
         dockWindow.contentView = NSHostingView(rootView: DockView())
         dockWindow.makeKeyAndOrderFront(nil)
     }

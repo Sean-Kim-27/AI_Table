@@ -20,8 +20,10 @@ struct ChatView: View {
     @FocusState private var isInputFocused: Bool
     @State private var eventMonitor: Any?
     @AppStorage("active_agent") private var activeAgent = "Gemini"
+    @AppStorage("gemini_model") private var geminiModel = "gemini-3.1-flash-preview"
     @AppStorage("groq_model") private var groqModel = "openai/gpt-oss-120b"
     @AppStorage("claude_model") private var claudeModel = "claude-3-7-sonnet-20250219"
+    @AppStorage("openai_model") private var openAIModel = "gpt-5.4"
     @AppStorage("max_history") private var maxHistory = 10
     @State private var showClearAlert = false
 
@@ -30,8 +32,9 @@ struct ChatView: View {
             // 상단 헤더
             HStack {
                 // 에이전트 이름 표시
-                Text(activeAgent == "Gemini" ? "Gemini 3.1 Flash-Lite" :
-                        (activeAgent == "Groq" ? "Groq (\(groqModel))" : "Claude (\(claudeModel))"))
+                Text(activeAgent == "Gemini" ? "Google (\(geminiModel))" :
+                        (activeAgent == "Groq" ? "Groq (\(groqModel))" :
+                            (activeAgent == "OpenAI" ? "OpenAI (\(openAIModel))" : "Claude (\(claudeModel))")))
                 .font(.headline)
                 .foregroundColor(.white)
 
@@ -188,9 +191,11 @@ struct ChatView: View {
 
                 // 스트리밍 전용 함수로 호출합니다.
                 if activeAgent == "Gemini" {
-                    stream = try await GeminiAPI.shared.sendMessageStream(history: chatHistory)
+                    stream = try await GeminiAPI.shared.sendMessageStream(history: chatHistory, model: geminiModel)
                 } else if activeAgent == "Groq" {
                     stream = try await GroqAPI.shared.sendMessageStream(history: chatHistory, model: groqModel)
+                } else if activeAgent == "OpenAI" {
+                    stream = try await OpenAIAPI.shared.sendMessageStream(history: chatHistory, model: openAIModel)
                 } else {
                     stream = try await ClaudeAPI.shared.sendMessageStream(history: chatHistory, model: claudeModel)
                 }

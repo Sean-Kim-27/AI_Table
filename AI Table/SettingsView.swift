@@ -11,22 +11,26 @@ struct SettingsView: View {
     
     @State private var isUnlocked = false
     
+    @AppStorage("gemini_model") private var geminiModel = "gemini-3.1-flash-preview"
     @AppStorage("groq_model") private var groqModel = "openai/gpt-oss-120b"
-    @AppStorage("claude_model") private var claudeModel = "claude-3-7-sonnet-20250219"
+    @AppStorage("claude_model") private var claudeModel = "claude-sonnet-4-6"
+    @AppStorage("openai_model") private var openAIModel = "gpt-5.4"
     @AppStorage("system_prompt") private var systemPrompt = "너는 친절하고 똑똑한 AI 조수야."
     @AppStorage("max_history") private var maxHistory = 10
+    
+    // 🚨 니가 원한 대로 OpenAI랑 Gemini는 빈칸(빈 배열)으로 냅뒀다 썅! 나중에 채워넣어라! 🚨
+    let openAIModels: [String] = ["gpt-5.4","gpt-5.4-pro","gpt-5.4-mini","gpt-5","gpt-5.3-codex","gpt-5.2-codex","gpt-5.1-codex-max","gpt-5.1-codex","o3-deep-research"]
+    let geminiModels: [String] = ["gemini-3.1-pro","gemini-3.1-flash-preview","gemini-3-flash-preview","gemma-3-27b-it","gemma-3-12b-it","gemini-2.5-pro","gemini-2.5-flash"]
     
     let groqModels = ["openai/gpt-oss-120b", "llama-3.3-70b-versatile", "qwen/qwen3-32b", "openai/gpt-oss-20b", "meta-llama/llama-4-scout-17b-16e-instruct"]
     let claudeModels = ["claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-4-5-20251001", "claude-opus-4-5-20251101", "claude-sonnet-4-5-20250929", "claude-opus-4-1-20250805", "claude-opus-4-20250514", "claude-sonnet-4-20250514"]
 
     var body: some View {
-        // TabView 구조를 유지해 안정성을 확보합니다.
         mainSettingsView
             .overlay(
                 Group {
                     if !isUnlocked {
                         lockScreenView
-                            // 설정 내용을 창 배경색으로 가려 노출을 방지합니다.
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(Color(NSColor.windowBackgroundColor))
                     }
@@ -35,7 +39,6 @@ struct SettingsView: View {
             .onAppear { authenticate() }
     }
     
-    // --- 🔒 지문 인식 대기 화면 ---
     var lockScreenView: some View {
         VStack(spacing: 20) {
             Image(systemName: "touchid")
@@ -56,7 +59,6 @@ struct SettingsView: View {
         }
     }
     
-    // --- ⚙️ 진짜 설정 화면 ---
     var mainSettingsView: some View {
         VStack(spacing: 0) {
             TabView {
@@ -69,11 +71,17 @@ struct SettingsView: View {
                                 KeyboardShortcuts.Recorder("", name: .toggleDock)
                             }
                             Divider()
+                            // 🚨 설정창 Grid에 모델 Picker들 싹 다 정렬해서 쑤셔넣음 썅! 🚨
                             Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 10) {
                                 GridRow { Text("OpenAI:").font(.subheadline).frame(width: 70, alignment: .leading); SecureField("Key", text: $openAIKey).textFieldStyle(.roundedBorder).frame(width: 190) }
+                                GridRow { Text("OpenAI 모델:"); Picker("", selection: $openAIModel) { ForEach(openAIModels, id: \.self) { Text($0) } }.labelsHidden().controlSize(.small).frame(width: 190) }
+                                
                                 GridRow { Text("Gemini:"); SecureField("Key", text: $geminiKey).textFieldStyle(.roundedBorder).frame(width: 190) }
+                                GridRow { Text("Gemini 모델:"); Picker("", selection: $geminiModel) { ForEach(geminiModels, id: \.self) { Text($0) } }.labelsHidden().controlSize(.small).frame(width: 190) }
+                                
                                 GridRow { Text("Groq Key:"); SecureField("Key", text: $groqKey).textFieldStyle(.roundedBorder).frame(width: 190) }
                                 GridRow { Text("Groq 모델:"); Picker("", selection: $groqModel) { ForEach(groqModels, id: \.self) { Text($0) } }.labelsHidden().controlSize(.small).frame(width: 190) }
+                                
                                 GridRow { Text("Claude Key:"); SecureField("Key", text: $claudeKey).textFieldStyle(.roundedBorder).frame(width: 190) }
                                 GridRow { Text("Claude 모델:"); Picker("", selection: $claudeModel) { ForEach(claudeModels, id: \.self) { Text($0) } }.labelsHidden().controlSize(.small).frame(width: 190) }
                             }
@@ -120,7 +128,8 @@ struct SettingsView: View {
             .padding(12)
             .background(Color(NSColor.windowBackgroundColor))
         }
-        .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 460, idealHeight: 460, maxHeight: 460)
+        // 설정창이 너무 길어지면 좀 짤릴 수 있어서 높이를 살짝 키웠다 썅!
+        .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 520, idealHeight: 520, maxHeight: 520)
         .fixedSize()
     }
     
