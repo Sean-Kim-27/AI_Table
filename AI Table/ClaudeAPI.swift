@@ -17,8 +17,7 @@ class ClaudeAPI {
     func sendMessageStream(history: [ChatMessage], model: String) async throws -> AsyncThrowingStream<String, Error> {
 
         // 키 매니저에서 클로드 키를 가져옵니다.
-        let bundle = KeyManager.loadAll()
-        let apiKey = bundle.claude
+        let apiKey = KeyManager.loadKey(for: .claude)
         guard !apiKey.isEmpty else {
             throw NSError(domain: "ClaudeAPI", code: 1, userInfo: [NSLocalizedDescriptionKey: "클로드 API 키가 없습니다. 설정에서 등록해주세요."])
         }

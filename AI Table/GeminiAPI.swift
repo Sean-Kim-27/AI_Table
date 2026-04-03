@@ -32,7 +32,7 @@ class GeminiAPI {
     // 🚨 파라미터에 model 받음 🚨
     func sendMessageStream(history: [ChatMessage], model: String) async throws -> AsyncThrowingStream<String, Error> {
 
-        let apiKey = KeyManager.loadAll().gemini
+        let apiKey = KeyManager.loadKey(for: .gemini)
         guard !apiKey.isEmpty else {
             throw NSError(domain: "GeminiAPI", code: 401, userInfo: [NSLocalizedDescriptionKey: "설정에서 Gemini API 키를 먼저 등록해주세요."])
         }
@@ -40,18 +40,19 @@ class GeminiAPI {
         let systemPrompt = UserDefaults.standard.string(forKey: "system_prompt") ?? "너는 친절하고 똑똑한 AI 조수야."
 
         let cleanKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // 🚨 URL에 모델명 동적 주입 🚨
-        let baseURL = "https://generativelanguage.googleapis.com/v1beta/models/\(model):streamGenerateContent"
-        let urlString = "\(baseURL)?alt=sse&key=\(cleanKey)"
 
-        guard let url = URL(string: urlString) else {
+        guard var components = URLComponents(string: "https://generativelanguage.googleapis.com/v1beta/models/\(model):streamGenerateContent") else {
+            throw NSError(domain: "GeminiAPI", code: 400, userInfo: [NSLocalizedDescriptionKey: "URL 문자열이 올바르지 않습니다. 다시 확인해주세요."])
+        }
+        components.queryItems = [URLQueryItem(name: "alt", value: "sse")]
+        guard let url = components.url else {
             throw NSError(domain: "GeminiAPI", code: 400, userInfo: [NSLocalizedDescriptionKey: "URL 문자열이 올바르지 않습니다. 다시 확인해주세요."])
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue(cleanKey, forHTTPHeaderField: "x-goog-api-key")
 
         // 🚨 Gemma 판독기 & 프롬프트 쑤셔넣기 로직 🚨
         let isGemma = model.lowercased().contains("gemma")

@@ -5,6 +5,7 @@ import Security
 class KeychainHelper {
     static let standard = KeychainHelper()
     private init() {}
+    private let defaultAccessibility = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
 
     // API 키 저장
     func save(_ data: Data, service: String, account: String) {
@@ -13,6 +14,7 @@ class KeychainHelper {
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: account,
+            kSecAttrAccessible: defaultAccessibility
         ] as CFDictionary
 
         // 동일 항목이 있으면 삭제 후 저장
@@ -55,20 +57,42 @@ struct APIKeyBundle: Codable {
 
 // 키체인 저장/불러오기 매니저
 class KeyManager {
+    static let serviceName = "MyAIDock"
     static let accountName = "bundled_api_keys"
+
+    enum Provider {
+        case openai
+        case gemini
+        case groq
+        case claude
+    }
 
     static func saveAll(openai: String, gemini: String, groq: String, claude: String) {
         let bundle = APIKeyBundle(openai: openai, gemini: gemini, groq: groq, claude: claude)
         if let data = try? JSONEncoder().encode(bundle) {
-            KeychainHelper.standard.save(data, service: "MyAIDock", account: accountName)
+            KeychainHelper.standard.save(data, service: serviceName, account: accountName)
         }
     }
 
     static func loadAll() -> APIKeyBundle {
-        if let data = KeychainHelper.standard.read(service: "MyAIDock", account: accountName),
+        if let data = KeychainHelper.standard.read(service: serviceName, account: accountName),
            let bundle = try? JSONDecoder().decode(APIKeyBundle.self, from: data) {
             return bundle
         }
         return APIKeyBundle()
+    }
+
+    static func loadKey(for provider: Provider) -> String {
+        let bundle = loadAll()
+        switch provider {
+        case .openai:
+            return bundle.openai
+        case .gemini:
+            return bundle.gemini
+        case .groq:
+            return bundle.groq
+        case .claude:
+            return bundle.claude
+        }
     }
 }
