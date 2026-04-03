@@ -22,16 +22,16 @@ struct OrchestrationSettingsPanel: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            Text("Orchestration")
+            Text("오케스트레이션")
                 .font(.headline)
-            Text("Tasks: \(viewModel.tasks.count)")
+            Text("작업: \(viewModel.tasks.count)")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
             Spacer()
 
             if let lastRunID = viewModel.lastRunID {
-                Text("Last run: \(lastRunID)")
+                Text("최근 실행: \(lastRunID)")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -39,12 +39,12 @@ struct OrchestrationSettingsPanel: View {
                     .frame(maxWidth: 260, alignment: .trailing)
             }
 
-            Button("Refresh") {
+            Button("새로고침") {
                 Task { await viewModel.load() }
             }
             .buttonStyle(.bordered)
 
-            Button("Run Sample") {
+            Button("샘플 실행") {
                 Task { await viewModel.runSampleTask() }
             }
             .buttonStyle(.borderedProminent)
@@ -54,7 +54,7 @@ struct OrchestrationSettingsPanel: View {
 
     private var taskListPane: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Tasks")
+            Text("작업 목록")
                 .font(.subheadline.weight(.semibold))
 
             List(selection: taskSelectionBinding) {
@@ -78,7 +78,7 @@ struct OrchestrationSettingsPanel: View {
             .listStyle(.inset)
 
             if let lastError = viewModel.lastError {
-                Text("Error: \(lastError)")
+                Text("오류: \(lastError)")
                     .font(.caption)
                     .foregroundColor(.red)
                     .lineLimit(2)
@@ -97,7 +97,7 @@ struct OrchestrationSettingsPanel: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                Text("Select a task to view runs, subtasks, outputs, and history.")
+                Text("작업을 선택하면 실행/서브태스크/출력/히스토리를 볼 수 있습니다.")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -107,7 +107,7 @@ struct OrchestrationSettingsPanel: View {
 
     private func taskSection(_ detail: OrchestrationTaskDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Task")
+            Text("작업")
                 .font(.subheadline.weight(.semibold))
             Text(detail.task.title)
                 .font(.headline)
@@ -117,7 +117,7 @@ struct OrchestrationSettingsPanel: View {
                 .textSelection(.enabled)
 
             HStack(spacing: 8) {
-                Text("Status: \(detail.task.status)")
+                Text("상태: \(detail.task.status)")
                     .font(.caption)
                 statusButtons(
                     currentStatus: detail.task.status,
@@ -133,15 +133,15 @@ struct OrchestrationSettingsPanel: View {
     private func runSection(_ detail: OrchestrationTaskDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Runs")
+                Text("실행")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                Button("Rerun") {
+                Button("재실행") {
                     Task { await viewModel.rerunSelectedTask() }
                 }
                 .buttonStyle(.bordered)
 
-                Button("Run Pending (Stub)") {
+                Button("대기 작업 실행(스텁)") {
                     Task { await viewModel.runPendingSubtasks() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -149,7 +149,7 @@ struct OrchestrationSettingsPanel: View {
             }
 
             if detail.runs.isEmpty {
-                Text("No runs yet")
+                Text("실행 기록 없음")
                     .font(.caption)
                     .foregroundColor(.secondary)
             } else {
@@ -173,11 +173,11 @@ struct OrchestrationSettingsPanel: View {
 
     private func subtaskSection(_ detail: OrchestrationTaskDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Subtasks")
+            Text("서브태스크")
                 .font(.subheadline.weight(.semibold))
 
             if detail.subtasks.isEmpty {
-                Text("No subtasks")
+                Text("서브태스크 없음")
                     .font(.caption)
                     .foregroundColor(.secondary)
             } else {
@@ -190,22 +190,22 @@ struct OrchestrationSettingsPanel: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             Spacer()
-                            Button("Retry") {
+                            Button("재시도") {
                                 Task { await viewModel.retrySubtask(subtaskID: subtask.id) }
                             }
                             .buttonStyle(.bordered)
 
-                            Button("Blocked") {
+                            Button("차단") {
                                 Task { await viewModel.updateSubtaskStatus(subtaskID: subtask.id, status: .blocked) }
                             }
                             .buttonStyle(.bordered)
 
-                            Button("Failed") {
+                            Button("실패") {
                                 Task { await viewModel.updateSubtaskStatus(subtaskID: subtask.id, status: .failed) }
                             }
                             .buttonStyle(.bordered)
 
-                            Button("Done") {
+                            Button("완료") {
                                 Task { await viewModel.updateSubtaskStatus(subtaskID: subtask.id, status: .done) }
                             }
                             .buttonStyle(.bordered)
@@ -229,19 +229,19 @@ struct OrchestrationSettingsPanel: View {
 
     private func historySection(_ detail: OrchestrationTaskDetail) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Log / History")
+            Text("로그 / 히스토리")
                 .font(.subheadline.weight(.semibold))
 
-            TextField("Search logs", text: $viewModel.logSearchQuery)
+            TextField("로그 검색", text: $viewModel.logSearchQuery)
                 .textFieldStyle(.roundedBorder)
 
             if detail.events.isEmpty {
-                Text("No history events")
+                Text("기록 없음")
                     .font(.caption)
                     .foregroundColor(.secondary)
             } else {
                 if viewModel.filteredEvents.isEmpty {
-                    Text("No logs match this search.")
+                    Text("검색 결과 없음")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
@@ -258,7 +258,7 @@ struct OrchestrationSettingsPanel: View {
                             Text(event.message)
                                 .font(.caption)
                             if let subtaskID = event.subtaskId {
-                                Text("Subtask: \(subtaskID)")
+                                Text("서브태스크: \(subtaskID)")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)
