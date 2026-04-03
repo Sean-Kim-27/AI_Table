@@ -32,7 +32,7 @@ class GeminiAPI {
     // 🚨 파라미터에 model 받음 🚨
     func sendMessageStream(history: [ChatMessage], model: String) async throws -> AsyncThrowingStream<String, Error> {
 
-        let apiKey = KeyManager.loadAll().gemini
+        let apiKey = KeyManager.loadKey(for: .gemini)
         guard !apiKey.isEmpty else {
             throw NSError(domain: "GeminiAPI", code: 401, userInfo: [NSLocalizedDescriptionKey: "설정에서 Gemini API 키를 먼저 등록해주세요."])
         }

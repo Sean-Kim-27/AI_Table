@@ -24,12 +24,10 @@ class GroqAPI {
 
     // 3. 리턴 타입을 스트리밍(AsyncThrowingStream)으로 제공합니다.
     func sendMessageStream(history: [ChatMessage], model: String) async throws -> AsyncThrowingStream<String, Error> {
-        guard let keyData = KeychainHelper.standard.read(service: "MyAIDock", account: "bundled_api_keys"),
-              let bundle = try? JSONDecoder().decode(APIKeyBundle.self, from: keyData),
-              !bundle.groq.isEmpty else {
+        let apiKey = KeyManager.loadKey(for: .groq)
+        guard !apiKey.isEmpty else {
             throw NSError(domain: "GroqAPI", code: 401, userInfo: [NSLocalizedDescriptionKey: "설정에서 Groq API 키를 먼저 등록해주세요."])
         }
-        let apiKey = bundle.groq
 
         let systemPrompt = UserDefaults.standard.string(forKey: "system_prompt") ?? "너는 친절하고 똑똑한 AI 조수야."
 
