@@ -1,6 +1,7 @@
 import SwiftUI
 import MarkdownUI
 import AppKit
+import CryptoKit
 
 // 스크롤뷰 안에서 텍스트 선택(복사)이 막히는 문제를 완화
 extension View {
@@ -223,18 +224,87 @@ struct ChatView: View {
     }
 
     func saveMessages() {
-        if let encoded = try? JSONEncoder().encode(messages) {
-            UserDefaults.standard.set(encoded, forKey: "chat_history_\(activeAgent)")
-        }
+        ChatHistoryStore.save(messages, for: activeAgent)
     }
 
     func loadMessages() {
-        if let data = UserDefaults.standard.data(forKey: "chat_history_\(activeAgent)"),
-           let decoded = try? JSONDecoder().decode([ChatMessage].self, from: data) {
-            messages = decoded
-        } else {
-            messages = []
+        messages = ChatHistoryStore.load(for: activeAgent)
+    }
+}
+
+private enum ChatHistoryStore {
+    private static let keyAccount = "chat_history_encryption_key"
+
+    static func save(_ messages: [ChatMessage], for agent: String) {
+        let fileURL = historyFileURL(for: agent)
+        let legacyKey = legacyDefaultsKey(for: agent)
+
+        if messages.isEmpty {
+            try? FileManager.default.removeItem(at: fileURL)
+            UserDefaults.standard.removeObject(forKey: legacyKey)
+            return
         }
+
+        guard let key = try? encryptionKey(),
+              let encoded = try? JSONEncoder().encode(messages),
+              let sealed = try? AES.GCM.seal(encoded, using: key).combined else {
+            return
+        }
+
+        try? sealed.write(to: fileURL, options: .atomic)
+        UserDefaults.standard.removeObject(forKey: legacyKey)
+    }
+
+    static func load(for agent: String) -> [ChatMessage] {
+        if let encryptedMessages = loadEncrypted(for: agent) {
+            return encryptedMessages
+        }
+
+        if let legacyData = UserDefaults.standard.data(forKey: legacyDefaultsKey(for: agent)),
+           let legacyMessages = try? JSONDecoder().decode([ChatMessage].self, from: legacyData) {
+            save(legacyMessages, for: agent)
+            return legacyMessages
+        }
+
+        return []
+    }
+
+    private static func loadEncrypted(for agent: String) -> [ChatMessage]? {
+        let fileURL = historyFileURL(for: agent)
+        guard let encryptedData = try? Data(contentsOf: fileURL),
+              let key = try? encryptionKey(),
+              let sealedBox = try? AES.GCM.SealedBox(combined: encryptedData),
+              let decryptedData = try? AES.GCM.open(sealedBox, using: key),
+              let messages = try? JSONDecoder().decode([ChatMessage].self, from: decryptedData) else {
+            return nil
+        }
+        return messages
+    }
+
+    private static func encryptionKey() throws -> SymmetricKey {
+        if let storedKeyData = KeychainHelper.standard.read(service: KeyManager.serviceName, account: keyAccount) {
+            return SymmetricKey(data: storedKeyData)
+        }
+
+        let newKey = SymmetricKey(size: .bits256)
+        let keyData = newKey.withUnsafeBytes { Data($0) }
+        KeychainHelper.standard.save(keyData, service: KeyManager.serviceName, account: keyAccount)
+        return newKey
+    }
+
+    private static func historyFileURL(for agent: String) -> URL {
+        let appSupportURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let directoryURL = appSupportURL.appendingPathComponent("AI_Table", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        return directoryURL.appendingPathComponent("chat_history_\(safeFileComponent(agent)).bin")
+    }
+
+    private static func legacyDefaultsKey(for agent: String) -> String {
+        "chat_history_\(agent)"
+    }
+
+    private static func safeFileComponent(_ value: String) -> String {
+        value.replacingOccurrences(of: "[^a-zA-Z0-9_-]", with: "_", options: .regularExpression)
     }
 }
 

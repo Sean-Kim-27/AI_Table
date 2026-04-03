@@ -37,7 +37,7 @@
 
 ## 3. 🔑 코드 아키텍처 (Core Logic)
 - **Language:** Swift 6.0 (SwiftUI / AppKit)
-- **Security:** Apple Keychain Services (API Key Encryption)
+- **Security:** Apple Keychain Services (API Key Encryption) + AES-GCM encrypted local chat history storage
 - **Network:** `URLSession.bytes` 기반의 서버 사이드 이벤트(SSE) 파싱
 
 ---
