@@ -79,15 +79,15 @@ final class OrchestrationViewModel {
 
     func updateTaskStatus(_ status: OrchestrationTaskStatus) async {
         guard let taskID = selectedTaskID else { return }
-        await runMutation {
-            try await runtime.orchestrator.updateTaskStatus(taskID: taskID, status: status)
+        await runMutation { [self] in
+            try await self.runtime.orchestrator.updateTaskStatus(taskID: taskID, status: status)
         }
     }
 
     func updateSubtaskStatus(subtaskID: String, status: Subtask.Status, clearResultRef: Bool = false) async {
         guard let taskID = selectedTaskID else { return }
-        await runMutation {
-            try await runtime.orchestrator.updateSubtaskStatus(
+        await runMutation { [self] in
+            try await self.runtime.orchestrator.updateSubtaskStatus(
                 taskID: taskID,
                 subtaskID: subtaskID,
                 status: status,
@@ -102,16 +102,16 @@ final class OrchestrationViewModel {
 
     func rerunSelectedTask() async {
         guard let taskID = selectedTaskID else { return }
-        await runMutation {
-            let run = try await runtime.orchestrator.rerun(taskID: taskID)
-            lastRunID = run.id
+        await runMutation { [self] in
+            let run = try await self.runtime.orchestrator.rerun(taskID: taskID)
+            self.lastRunID = run.id
         }
     }
 
     func runPendingSubtasks() async {
         guard let taskID = selectedTaskID else { return }
-        await runMutation {
-            try await runtime.orchestrator.runPendingSubtasks(taskID: taskID)
+        await runMutation { [self] in
+            try await self.runtime.orchestrator.runPendingSubtasks(taskID: taskID)
         }
     }
 
