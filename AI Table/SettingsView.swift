@@ -115,6 +115,9 @@ struct SettingsView: View {
                     }
                 }
                 .tabItem { Label("프롬프트", systemImage: "brain.head.profile") }
+
+                OrchestrationSettingsPanel()
+                    .tabItem { Label("오케스트", systemImage: "square.grid.2x2") }
             }
             
             Divider()

@@ -18,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupDockWindow()
         setupChatWindow()
+        OrchestrationRuntime.shared.bootstrapIfNeeded()
 
         setupMenuBar()
         KeyboardShortcuts.onKeyUp(for: .toggleDock) { [weak self] in
