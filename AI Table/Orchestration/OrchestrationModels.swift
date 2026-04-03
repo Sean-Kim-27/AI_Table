@@ -124,7 +124,7 @@ struct ContextPacket: Codable, Sendable {
 
 // MARK: - Persistence Models
 
-enum OrchestrationTaskStatus: String, Codable, Sendable {
+enum OrchestrationTaskStatus: String, Codable, CaseIterable, Sendable {
     case queued
     case running
     case done
@@ -136,6 +136,12 @@ enum OrchestrationRunState: String, Codable, Sendable {
     case paused
     case complete
     case failed
+}
+
+enum OrchestrationEventLevel: String, Codable, Sendable {
+    case info
+    case warning
+    case error
 }
 
 struct TaskRecord: Codable, FetchableRecord, PersistableRecord, Identifiable, Sendable {
@@ -235,11 +241,43 @@ struct OutputRecord: Codable, FetchableRecord, PersistableRecord, Identifiable, 
     var artifacts: String
     var createdAt: Date
 
+    enum Columns {
+        static let subtaskId = Column("subtask_id")
+        static let createdAt = Column("created_at")
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case subtaskId = "subtask_id"
         case content
         case artifacts
+        case createdAt = "created_at"
+    }
+}
+
+struct EventRecord: Codable, FetchableRecord, PersistableRecord, Identifiable, Sendable {
+    static let databaseTableName = "events"
+
+    var id: String
+    var taskId: String
+    var runId: String?
+    var subtaskId: String?
+    var level: String
+    var message: String
+    var createdAt: Date
+
+    enum Columns {
+        static let taskId = Column("task_id")
+        static let createdAt = Column("created_at")
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case taskId = "task_id"
+        case runId = "run_id"
+        case subtaskId = "subtask_id"
+        case level
+        case message
         case createdAt = "created_at"
     }
 }
@@ -272,4 +310,12 @@ struct OrchestrationRunSnapshot: Identifiable, Sendable {
     var subtasks: [SubtaskRecord]
 
     var id: String { run.id }
+}
+
+struct OrchestrationTaskDetail: Sendable {
+    var task: TaskRecord
+    var runs: [RunRecord]
+    var subtasks: [SubtaskRecord]
+    var latestOutputBySubtaskID: [String: OutputRecord]
+    var events: [EventRecord]
 }

@@ -3,6 +3,7 @@ import GRDB
 
 enum OrchestrationMigrations {
     private static let schemaV1 = "orchestration.schema.v1"
+    private static let schemaV2Events = "orchestration.schema.v2.events"
     private static let seedAgentsV1 = "orchestration.data.seed-agents.v1"
 
     static func migrator() -> DatabaseMigrator {
@@ -68,6 +69,18 @@ enum OrchestrationMigrations {
                 t.column("capabilities", .text).notNull().defaults(to: "[]")
                 t.column("tool_policy", .text).notNull().defaults(to: "{}")
                 t.column("default_provider", .text)
+            }
+        }
+
+        migrator.registerMigration(schemaV2Events) { db in
+            try db.create(table: "events") { t in
+                t.column("id", .text).primaryKey()
+                t.column("task_id", .text).notNull().indexed().references("tasks", onDelete: .cascade)
+                t.column("run_id", .text).references("runs", onDelete: .setNull)
+                t.column("subtask_id", .text).references("subtasks", onDelete: .setNull)
+                t.column("level", .text).notNull()
+                t.column("message", .text).notNull()
+                t.column("created_at", .datetime).notNull().indexed()
             }
         }
     }

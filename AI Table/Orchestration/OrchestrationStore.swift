@@ -6,6 +6,7 @@ actor OrchestrationStore {
     private var taskCache: [String: TaskRecord] = [:]
     private var subtaskCacheByTask: [String: [SubtaskRecord]] = [:]
     private var runCacheByTask: [String: [RunRecord]] = [:]
+    private var eventCacheByTask: [String: [EventRecord]] = [:]
 
     init(dbQueue: DatabaseQueue) {
         self.dbQueue = dbQueue
@@ -118,18 +119,38 @@ actor OrchestrationStore {
     }
 
     func updateSubtaskStatus(subtaskID: String, status: Subtask.Status, resultRef: String? = nil) throws {
-        try dbQueue.write { db in
-            try db.execute(
-                sql: "UPDATE subtasks SET status = ?, result_ref = COALESCE(?, result_ref) WHERE id = ?",
-                arguments: [status.rawValue, resultRef, subtaskID]
-            )
+        try updateSubtaskStatus(subtaskID: subtaskID, status: status, resultRef: resultRef, clearResultRef: false)
+    }
+
+    func updateSubtaskStatus(
+        subtaskID: String,
+        status: Subtask.Status,
+        resultRef: String? = nil,
+        clearResultRef: Bool
+    ) throws {
+        if clearResultRef {
+            try dbQueue.write { db in
+                try db.execute(
+                    sql: "UPDATE subtasks SET status = ?, result_ref = NULL WHERE id = ?",
+                    arguments: [status.rawValue, subtaskID]
+                )
+            }
+        } else {
+            try dbQueue.write { db in
+                try db.execute(
+                    sql: "UPDATE subtasks SET status = ?, result_ref = COALESCE(?, result_ref) WHERE id = ?",
+                    arguments: [status.rawValue, resultRef, subtaskID]
+                )
+            }
         }
 
         for (taskID, rows) in subtaskCacheByTask {
             if let index = rows.firstIndex(where: { $0.id == subtaskID }) {
                 var updatedRows = rows
                 updatedRows[index].status = status.rawValue
-                if let resultRef {
+                if clearResultRef {
+                    updatedRows[index].resultRef = nil
+                } else if let resultRef {
                     updatedRows[index].resultRef = resultRef
                 }
                 subtaskCacheByTask[taskID] = updatedRows
@@ -174,6 +195,21 @@ actor OrchestrationStore {
         runs.insert(run, at: 0)
         runCacheByTask[taskID] = runs
         return run
+    }
+
+    func updateRunState(runID: String, taskID: String, state: OrchestrationRunState) throws {
+        try dbQueue.write { db in
+            try db.execute(
+                sql: "UPDATE runs SET state = ? WHERE id = ?",
+                arguments: [state.rawValue, runID]
+            )
+        }
+
+        if var cachedRuns = runCacheByTask[taskID],
+           let index = cachedRuns.firstIndex(where: { $0.id == runID }) {
+            cachedRuns[index].state = state.rawValue
+            runCacheByTask[taskID] = cachedRuns
+        }
     }
 
     func finishRun(
@@ -233,6 +269,100 @@ actor OrchestrationStore {
         }
 
         return output
+    }
+
+    func addEvent(
+        taskID: String,
+        runID: String?,
+        subtaskID: String?,
+        level: OrchestrationEventLevel = .info,
+        message: String
+    ) throws -> EventRecord {
+        let event = EventRecord(
+            id: UUID().uuidString,
+            taskId: taskID,
+            runId: runID,
+            subtaskId: subtaskID,
+            level: level.rawValue,
+            message: message,
+            createdAt: Date()
+        )
+
+        try dbQueue.write { db in
+            try event.insert(db)
+        }
+
+        var events = eventCacheByTask[taskID] ?? []
+        events.insert(event, at: 0)
+        eventCacheByTask[taskID] = events
+        return event
+    }
+
+    func fetchEvents(taskID: String, limit: Int = 400) throws -> [EventRecord] {
+        if let cached = eventCacheByTask[taskID] {
+            return Array(cached.prefix(limit))
+        }
+
+        let rows = try dbQueue.read { db in
+            try EventRecord
+                .filter(EventRecord.Columns.taskId == taskID)
+                .order(EventRecord.Columns.createdAt.desc)
+                .limit(limit)
+                .fetchAll(db)
+        }
+
+        eventCacheByTask[taskID] = rows
+        return rows
+    }
+
+    func fetchTaskDetail(taskID: String, eventLimit: Int = 400) throws -> OrchestrationTaskDetail? {
+        let detail = try dbQueue.read { db -> OrchestrationTaskDetail? in
+            guard let task = try TaskRecord.fetchOne(db, key: taskID) else {
+                return nil
+            }
+
+            let runs = try RunRecord
+                .filter(RunRecord.Columns.taskId == taskID)
+                .order(RunRecord.Columns.startedAt.desc)
+                .fetchAll(db)
+
+            let subtasks = try SubtaskRecord
+                .filter(SubtaskRecord.Columns.taskId == taskID)
+                .order(SubtaskRecord.Columns.createdAt.asc)
+                .fetchAll(db)
+
+            let subtaskIDs = subtasks.map(\.id)
+            let outputs = try subtaskIDs.isEmpty ? [] : OutputRecord
+                .filter(subtaskIDs.contains(OutputRecord.Columns.subtaskId))
+                .order(OutputRecord.Columns.createdAt.desc)
+                .fetchAll(db)
+
+            var latestOutputBySubtaskID: [String: OutputRecord] = [:]
+            for output in outputs where latestOutputBySubtaskID[output.subtaskId] == nil {
+                latestOutputBySubtaskID[output.subtaskId] = output
+            }
+
+            let events = try EventRecord
+                .filter(EventRecord.Columns.taskId == taskID)
+                .order(EventRecord.Columns.createdAt.desc)
+                .limit(eventLimit)
+                .fetchAll(db)
+
+            return OrchestrationTaskDetail(
+                task: task,
+                runs: runs,
+                subtasks: subtasks,
+                latestOutputBySubtaskID: latestOutputBySubtaskID,
+                events: events
+            )
+        }
+
+        guard let detail else { return nil }
+        taskCache[taskID] = detail.task
+        runCacheByTask[taskID] = detail.runs
+        subtaskCacheByTask[taskID] = detail.subtasks
+        eventCacheByTask[taskID] = detail.events
+        return detail
     }
 
     func fetchAgents() throws -> [AgentRecord] {
