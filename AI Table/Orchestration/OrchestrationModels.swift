@@ -149,6 +149,17 @@ struct TaskRecord: Codable, FetchableRecord, PersistableRecord, Identifiable, Se
     var status: String
     var createdAt: Date
     var updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case prompt
+        case constraints
+        case outputFormat = "output_format"
+        case status
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
 }
 
 struct SubtaskRecord: Codable, FetchableRecord, PersistableRecord, Identifiable, Sendable {
