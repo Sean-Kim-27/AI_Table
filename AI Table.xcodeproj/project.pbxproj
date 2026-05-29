@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A8B100012F7A000100ABC001 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = A8B100022F7A000100ABC001 /* GRDB */; };
 		A79533CE2F6D02F70021FE91 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = A79533CD2F6D02F70021FE91 /* MarkdownUI */; };
 		A7C4DCA32F6BE3D40024CD45 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = A7C4DCA22F6BE3D40024CD45 /* KeyboardShortcuts */; };
 		A7F855272F6D9B9800ED7F29 /* Splash in Frameworks */ = {isa = PBXBuildFile; productRef = A7F855262F6D9B9800ED7F29 /* Splash */; };
@@ -65,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A8B100012F7A000100ABC001 /* GRDB in Frameworks */,
 				A7F8552B2F6D9B9800ED7F29 /* SplashMarkdown in Frameworks */,
 				A7C4DCA32F6BE3D40024CD45 /* KeyboardShortcuts in Frameworks */,
 				A79533CE2F6D02F70021FE91 /* MarkdownUI in Frameworks */,
@@ -133,6 +135,7 @@
 			);
 			name = "AI Table";
 			packageProductDependencies = (
+				A8B100022F7A000100ABC001 /* GRDB */,
 				A7C4DCA22F6BE3D40024CD45 /* KeyboardShortcuts */,
 				A79533CD2F6D02F70021FE91 /* MarkdownUI */,
 				A7F855262F6D9B9800ED7F29 /* Splash */,
@@ -224,6 +227,7 @@
 			mainGroup = A7C4DC692F6BDF200024CD45;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				A8B100032F7A000100ABC001 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				A7C4DCA12F6BE3D40024CD45 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
 				A79533CC2F6D02F70021FE91 /* XCRemoteSwiftPackageReference "MarkdownUI" */,
 				A7F855252F6D9B9800ED7F29 /* XCRemoteSwiftPackageReference "Splash" */,
@@ -628,6 +632,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		A8B100032F7A000100ABC001 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
 		A79533CC2F6D02F70021FE91 /* XCRemoteSwiftPackageReference "MarkdownUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/gonzalezreal/MarkdownUI";
@@ -655,6 +667,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A8B100022F7A000100ABC001 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A8B100032F7A000100ABC001 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
+		};
 		A79533CD2F6D02F70021FE91 /* MarkdownUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A79533CC2F6D02F70021FE91 /* XCRemoteSwiftPackageReference "MarkdownUI" */;

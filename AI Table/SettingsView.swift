@@ -115,6 +115,9 @@ struct SettingsView: View {
                     }
                 }
                 .tabItem { Label("프롬프트", systemImage: "brain.head.profile") }
+
+                OrchestrationSettingsPanel()
+                    .tabItem { Label("오케스트", systemImage: "square.grid.2x2") }
             }
             
             Divider()
@@ -128,8 +131,7 @@ struct SettingsView: View {
             .padding(12)
             .background(Color(NSColor.windowBackgroundColor))
         }
-        // 설정창이 너무 길어지면 좀 짤릴 수 있어서 높이를 살짝 키웠다 썅!
-        .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 520, idealHeight: 520, maxHeight: 520)
+        .frame(minWidth: 980, idealWidth: 980, maxWidth: 980, minHeight: 640, idealHeight: 640, maxHeight: 720)
         .fixedSize()
     }
     
